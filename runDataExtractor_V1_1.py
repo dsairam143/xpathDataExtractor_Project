@@ -3,17 +3,17 @@ from homeBlogData import extractBlogData
 from singleTableDataExtraxtor import tableDataExtractor
 from singleXpathDataExtractor import extractSinglePath
 
-def getHomeBlogData(content, pathData, finalResult):
+def getHomeBlogData(key, content, pathData, finalResult):
     print(pathData)
     if pathData.get('blogMainDivPath') and  pathData.get('blogPath') :
-        finalResult["extraBlogData"] = extractBlogData(content, pathData.get('blogMainDivPath'), pathData.get('blogPath'))
+        finalResult[key] = extractBlogData(content, pathData.get('blogMainDivPath'), pathData.get('blogPath'))
     return finalResult
 def getSingleTableDataExtractor(tableName, content, tablePath, finalResult):
     finalResult[tableName] = tableDataExtractor(content, tablePath)
     return finalResult
 
-def getSingleXPathDataExtractor(content, singlePaths, finalResult):
-    finalResult['singlePaths'] = extractSinglePath(content, singlePaths)
+def getSingleXPathDataExtractor(key, content, singlePaths, finalResult):
+    finalResult[key] = extractSinglePath(content, singlePaths)
 
 if __name__ == "__main__":
 
@@ -48,23 +48,25 @@ if __name__ == "__main__":
             ]
 
         },
-        "tableData":[
-            ['name1', '//*[@id="main"]/div[3]/div']
-        ],
-        "singlePath":[['Heading', 'text', '//*[@id="main"]/h2[1]'],
-                      ['SubHeading', 'text', '//*[@id="main"]/h2[2]']]
+        "tableData":'//*[@id="main"]/div[3]/div',
+        "singlePath":['Heading', 'text', '//*[@id="main"]/h2[1]']
+
 
     }
 
     finalResult = dict()
     content = requests.get(jsonFile.get('mainUrl')).content
-    if jsonFile.get("homeBlogData"):
-        getHomeBlogData(content, jsonFile.get("homeBlogData"), finalResult)
+    for key,value in jsonFile.items():
 
-    if jsonFile.get('tableData'):
-        for table in jsonFile.get('tableData'):
-            getSingleTableDataExtractor(table[0], content, table[1], finalResult)
+        if 'homeBlogData' in key:
+            if jsonFile.get(key):
+                getHomeBlogData(key, content, jsonFile.get(key), finalResult)
 
-    if jsonFile.get('singlePath'):
-        getSingleXPathDataExtractor(content, jsonFile.get('singlePath'), finalResult)
-    print(finalResult)
+        if 'tableData' in key:
+            if jsonFile.get(key):
+                getSingleTableDataExtractor(key, content, jsonFile.get(key), finalResult)
+
+        if 'singlePath' in key:
+            if jsonFile.get(key):
+                getSingleXPathDataExtractor(key, content, jsonFile.get(key), finalResult)
+            print(finalResult)
